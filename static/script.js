@@ -35,6 +35,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let mediaStream = null;
     let capturedImageData = null;
     let currentZoom = 1;
+    let lastRecommendationsMarkdown = '';
+    let lastProducts = [];
+    let lastAnalysisMeta = null;
+
+    // Helper to pick an icon for product cards based on gender
+    function getGenderIcon(gender) {
+        if (!gender) return '🧑';
+        const g = gender.toString().toLowerCase();
+        if (g.indexOf('male') !== -1 || g.indexOf('man') !== -1) return '👔';
+        if (g.indexOf('female') !== -1 || g.indexOf('woman') !== -1) return '👗';
+        return '🧑';
+    }
 
     // Initialize tab styles
     uploadTab.classList.add('active');
@@ -320,6 +332,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayResults(data) {
+        // Save raw data for download / share
+        lastRecommendationsMarkdown = data.recommendations || '';
+        lastProducts = data.products || [];
+        lastAnalysisMeta = data;
+
+        // Show action buttons
+        const resultActions = document.getElementById('resultActions');
+        if (resultActions) resultActions.style.display = 'flex';
         // Update skin tone detection
         document.getElementById('skintoneText').textContent = data.skin_tone;
         document.getElementById('colorBox').style.backgroundColor = data.average_color;
@@ -334,9 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update shopping guide
         if (data.products && data.products.length > 0) {
             const shoppingGrid = document.getElementById('shoppingGuide');
+            const icon = getGenderIcon(data.gender);
             shoppingGrid.innerHTML = data.products.map(product => `
                 <div class="product-card">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">👗</div>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">${icon}</div>
                     <h6>${product.name}</h6>
                     <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">${product.description || ''}</p>
                     <a href="${product.shop_link}" target="_blank" class="shop-btn">
@@ -354,6 +375,81 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             resultsContainer.scrollIntoView({ behavior: 'smooth' });
         }, 100);
+    }
+
+    // Download handler: create a markdown/text file and trigger download
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            if (!lastAnalysisMeta) {
+                showAlert('No analysis available to download', 'warning');
+                return;
+            }
+
+            const lines = [];
+            lines.push('# StyleAI — Personalized Style Guide');
+            lines.push('');
+            lines.push(`Detected Skin Tone: ${lastAnalysisMeta.skin_tone}`);
+            lines.push(`Detected Face Shape: ${lastAnalysisMeta.face_shape}`);
+            lines.push(`Average Color: ${lastAnalysisMeta.average_color}`);
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            // Append recommendations (markdown returned from server)
+            lines.push(lastRecommendationsMarkdown || 'No recommendations available.');
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            if (lastProducts && lastProducts.length > 0) {
+                lines.push('Recommended Products:');
+                lastProducts.forEach(p => {
+                    lines.push(`- ${p.name} — ${p.description || ''}`);
+                    if (p.shop_link) lines.push(`  Link: ${p.shop_link}`);
+                });
+            }
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            a.href = url;
+            a.download = `styleai_recommendations_${timestamp}.md`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    // WhatsApp share handler: open wa.me with a concise message (encoded)
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    if (whatsappBtn) {
+        whatsappBtn.addEventListener('click', function() {
+            if (!lastAnalysisMeta) {
+                showAlert('No analysis available to share', 'warning');
+                return;
+            }
+
+            // Build a concise share message
+            let message = `StyleAI Recommendation:\n`;
+            message += `Skin Tone: ${lastAnalysisMeta.skin_tone} -- Face Shape: ${lastAnalysisMeta.face_shape}\\n\\n`;
+
+            // Use the first 600 characters of the recommendations to keep message reasonable
+            const rec = (lastRecommendationsMarkdown || '').replace(/\n+/g, '\n').trim();
+            const snippet = rec.length > 600 ? rec.slice(0, 600) + '... (truncated)' : rec;
+            message += snippet + '\n\n';
+
+            if (lastProducts && lastProducts.length > 0) {
+                message += 'Products:\n';
+                lastProducts.slice(0,5).forEach(p => {
+                    message += `- ${p.name}: ${p.shop_link || ''}\n`;
+                });
+            }
+
+            const encoded = encodeURIComponent(message);
+            const waLink = `https://wa.me/?text=${encoded}`;
+            window.open(waLink, '_blank');
+        });
     }
 
     function markdownToHtml(markdown) {
@@ -400,5 +496,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+    });
+
+    /* === Assistant chat widget === */
+    const assistantBtn = document.getElementById('assistantBtn');
+    const assistantModalEl = document.getElementById('assistantModal');
+    const assistantMessages = document.getElementById('assistantMessages');
+    const assistantInput = document.getElementById('assistantInput');
+    const assistantSendBtn = document.getElementById('assistantSendBtn');
+    let assistantModal = null;
+    if (assistantModalEl) assistantModal = new bootstrap.Modal(assistantModalEl);
+
+    function appendAssistantMessage(role, text) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mb-2 d-flex';
+        if (role === 'user') {
+            wrapper.style.justifyContent = 'flex-end';
+            wrapper.innerHTML = `<div class="p-2 rounded-3 text-white" style="background:linear-gradient(90deg,#2563eb,#06b6d4);max-width:80%">${escapeHtml(text)}</div>`;
+        } else {
+            wrapper.style.justifyContent = 'flex-start';
+            wrapper.innerHTML = `<div class="p-2 rounded-3 bg-light text-dark" style="max-width:80%">${escapeHtml(text)}</div>`;
+        }
+        assistantMessages.appendChild(wrapper);
+        assistantMessages.scrollTop = assistantMessages.scrollHeight;
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    if (assistantBtn && assistantModal) {
+        assistantBtn.addEventListener('click', () => {
+            assistantModal.show();
+            assistantInput.focus();
+        });
+    }
+
+    async function sendAssistantQuestion() {
+        const q = assistantInput.value.trim();
+        if (!q) return;
+        appendAssistantMessage('user', q);
+        assistantInput.value = '';
+        assistantInput.disabled = true;
+        assistantSendBtn.disabled = true;
+
+        // typing placeholder
+        const typingId = 'typing-' + Date.now();
+        const typingEl = document.createElement('div');
+        typingEl.className = 'mb-2 d-flex';
+        typingEl.style.justifyContent = 'flex-start';
+        typingEl.id = typingId;
+        typingEl.innerHTML = `<div class="p-2 rounded-3 bg-light text-dark" style="max-width:80%"><em>Thinking...</em></div>`;
+        assistantMessages.appendChild(typingEl);
+        assistantMessages.scrollTop = assistantMessages.scrollHeight;
+
+        try {
+            const resp = await fetch('/api/assistant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: q })
+            });
+            const data = await resp.json();
+            document.getElementById(typingId)?.remove();
+            if (data && data.success) {
+                appendAssistantMessage('assistant', data.answer || 'No answer returned.');
+            } else {
+                appendAssistantMessage('assistant', data.message || 'Sorry, I could not get an answer right now.');
+            }
+        } catch (err) {
+            document.getElementById(typingId)?.remove();
+            appendAssistantMessage('assistant', 'Network or server error: ' + (err.message || err));
+            console.error('Assistant error', err);
+        } finally {
+            assistantInput.disabled = false;
+            assistantSendBtn.disabled = false;
+            assistantInput.focus();
+        }
+    }
+
+    assistantSendBtn?.addEventListener('click', sendAssistantQuestion);
+    assistantInput?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendAssistantQuestion();
+        }
     });
 });

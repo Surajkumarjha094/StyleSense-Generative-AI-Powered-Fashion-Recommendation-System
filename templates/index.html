@@ -74,7 +74,7 @@
                     <div class="feature-card h-100">
                         <div class="feature-icon">🛍️</div>
                         <h5 class="mt-3">Shopping Links</h5>
-                        <p class="text-muted">Direct links to buy from Amazon, Myntra & Zara.</p>
+                        <p class="text-muted">Vendor-agnostic shopping search links (Google Shopping) to find recommended items.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
@@ -281,6 +281,11 @@
                                 <div id="recommendationsContent" class="recommendations-text">
                                     <!-- Content will be inserted here -->
                                 </div>
+                                        <!-- Action buttons: Download & WhatsApp Share -->
+                                        <div class="mt-3 d-flex gap-2" id="resultActions" style="display: none;">
+                                            <button id="downloadBtn" class="btn btn-outline-primary">⬇️ Download</button>
+                                            <button id="whatsappBtn" class="btn btn-success">💬 Share on WhatsApp</button>
+                                        </div>
                             </div>
                         </div>
 
@@ -434,6 +439,32 @@
             </div>
         </div>
     </footer>
+
+                <!-- Assistant Floating Button & Modal -->
+                <button id="assistantBtn" class="btn assistant-btn" aria-label="Open StyleAI Assistant">
+                    <!-- Use an inline image showing a woman doing namaste; external Unsplash image used for demo -->
+                      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80&auto=format&fit=crop&crop=entropy" alt="Boat on water" class="assistant-avatar">
+                </button>
+
+                <div class="modal fade" id="assistantModal" tabindex="-1" aria-labelledby="assistantModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-md">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                            <h5 class="modal-title" id="assistantModalLabel">� Boat Assistant</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                            <div id="assistantMessages" style="max-height:320px;overflow:auto;padding:0.5rem;">
+                                                <div class="text-muted small">Ask me about boats, the site, or how to run this project.</div>
+                                            </div>
+                                <div class="input-group mt-3">
+                                    <input id="assistantInput" type="text" class="form-control" placeholder="Type your question...">
+                                    <button id="assistantSendBtn" class="btn btn-assistant">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>

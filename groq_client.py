@@ -34,13 +34,8 @@ class GroqService:
                     path_last = parsed.path.split("/")[-1]
                     candidate = path_last.replace("-", " ")
                 q = quote(candidate.strip())
-                if "amazon.in" in host:
-                    return f"[{label}](https://www.amazon.in/s?k={q})"
-                if "myntra.com" in host:
-                    return f"[{label}](https://www.myntra.com/search?query={q})"
-                if "zara.com" in host:
-                    return f"[{label}](https://www.zara.com/in/en/search?searchTerm={q})"
-                return match.group(0)
+                # Normalize all shopping links to vendor-agnostic Google Shopping search links
+                return f"[{label}](https://www.google.com/search?tbm=shop&q={q})"
             except Exception:
                 return match.group(0)
 
@@ -100,12 +95,11 @@ class GroqService:
         - **Accessories:** Jewelry metals (Gold/Silver/Rose Gold), glasses recommendations, based on face shape
         - **Eyebrow Shape:** Best suited for {face_shape} face
 
-        ### 7. Shopping Guide
-        For each outfit recommendation above, provide specific search terms to find these items on Amazon.in, Myntra, and Zara.
-        Format them as:
-        - *Casual Look:* [Search for White Linen Shirt on Amazon.in](https://www.amazon.in/s?k=white+linen+shirt)
-        - *Casual Look:* [Search for White Linen Shirt on Myntra](https://www.myntra.com/search?query=white+linen+shirt)
-        - *Casual Look:* [Search for White Linen Shirt on Zara](https://www.zara.com/in/en/search?searchTerm=white+linen+shirt)
+    ### 7. Shopping Guide
+    For each outfit recommendation above, provide concise search terms and vendor-agnostic shopping search links (Google Shopping) so users can find the items across multiple retailers.
+    Format them as:
+    - *Casual Look:* [Search for White Linen Shirt (shopping)](https://www.google.com/search?tbm=shop&q=white+linen+shirt)
+    - *Casual Look:* Search terms: `white linen shirt`, complementary color suggestions, and 1-2 accessory keywords.
         
         Please ensure the tone is encouraging, professional, and personalized to the {face_shape} face shape and {skin_tone} skin tone combination.
         """
@@ -138,3 +132,45 @@ class GroqService:
             import traceback
             traceback.print_exc()
             return f"Error generating recommendations: {str(e)}"
+
+    def ask_question(self, question: str, context: str = "") -> str:
+        """Ask a general question to the Groq LLM with optional site context.
+
+        Returns the assistant's answer as plain text (markdown-friendly).
+        """
+        if not self.client:
+            print("❌ Error: Groq client not initialized")
+            return "Error: Groq API Key is missing."
+
+        system_msg = (
+            "You are StyleAI — the virtual assistant for the StyleAI website. "
+            "You know the site's features, how it works, and its quickstart/install instructions. "
+            "Answer user questions concisely, reference the site where relevant, and when appropriate give step-by-step or code examples. "
+            "If the question is outside the scope of the site, say you don't know and suggest sensible next steps."
+        )
+
+        user_prompt = f"""
+        Site context (may include README or quickstart snippets):
+        {context}
+
+        User question:
+        {question}
+        """
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": user_prompt}
+                ],
+                model="llama-3.3-70b-versatile",
+                temperature=0.2,
+                max_tokens=800,
+            )
+            raw = chat_completion.choices[0].message.content
+            return raw
+        except Exception as e:
+            print(f"❌ Error in ask_question: {e}")
+            import traceback
+            traceback.print_exc()
+            return f"Error answering question: {str(e)}"

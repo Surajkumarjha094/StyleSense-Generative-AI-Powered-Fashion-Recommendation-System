@@ -7,7 +7,7 @@ StyleAI is a professional web application that leverages Groq's LLaMA 3.3 70B AI
 - **🎯 Skin Tone Analysis:** Automatically detects skin tone (Fair, Medium, Olive, Deep) from user-uploaded photos
 - **🤖 AI Fashion Consultant:** Uses LLaMA 3.3 70B via Groq API for personalized styling advice
 - **👥 Gender-Specific Recommendations:** Tailored outfits for Men, Women, and Non-Binary users
-- **🛍️ Smart Shopping:** Direct search links for Amazon.in, Myntra, and Zara
+- **🛍️ Smart Shopping:** Vendor-agnostic Google Shopping search links for easy shopping across retailers
 - **⚡ Fast & Professional:** Built with Flask and modern web technologies
 
 ## Prerequisites
@@ -56,7 +56,7 @@ Open your browser and navigate to the URL above. The app will automatically load
 2. **Select Gender** - Choose your gender (Female, Male, Non-Binary)
 3. **AI Analysis** - System detects your skin tone using computer vision
 4. **Get Styled** - LLaMA AI generates personalized recommendations
-5. **Shop** - Direct links to buy suggested items from top retailers
+5. **Shop** - Vendor-agnostic shopping search links (Google Shopping) to find suggested items across retailers
 
 ## Tech Stack
 
