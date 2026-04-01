@@ -24,9 +24,99 @@ def allowed_file(filename):
 
 groq_service = GroqService()
 
-def generate_product_recommendations(skin_tone, gender):
-    """Generate personalized product recommendations based on skin tone and gender"""
-    print(f"🛍️ Generating products for {gender} with {skin_tone} skin tone")
+def generate_product_recommendations(skin_tone, gender, occasion=None):
+    """Generate personalized product recommendations based on skin tone, gender, and occasion"""
+    print(f"🛍️ Generating products for {gender} with {skin_tone} skin tone and occasion {occasion}")
+    
+    # Strict occasion-based recommendations
+    occasion_products = {
+        'interview': {
+            'Female': [
+                {'name': 'Formal Shirt', 'description': 'Perfect for interviews', 'shop_link': 'https://www.google.com/search?tbm=shop&q=formal+shirt+women'},
+                {'name': 'Blazer', 'description': 'Professional look', 'shop_link': 'https://www.google.com/search?tbm=shop&q=blazer+women'},
+                {'name': 'Dress Pants', 'description': 'Smart and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=dress+pants+women'},
+                {'name': 'Office Dress', 'description': 'Classic interview attire', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+dress+women'},
+                {'name': 'Minimal Jewelry', 'description': 'Subtle accessories', 'shop_link': 'https://www.google.com/search?tbm=shop&q=minimal+jewelry+women'}
+            ],
+            'Male': [
+                {'name': 'Formal Shirt', 'description': 'Perfect for interviews', 'shop_link': 'https://www.google.com/search?tbm=shop&q=formal+shirt+men'},
+                {'name': 'Blazer', 'description': 'Professional look', 'shop_link': 'https://www.google.com/search?tbm=shop&q=blazer+men'},
+                {'name': 'Dress Pants', 'description': 'Smart and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=dress+pants+men'},
+                {'name': 'Office Shoes', 'description': 'Classic interview footwear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+shoes+men'},
+                {'name': 'Tie', 'description': 'Professional accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=tie+men'}
+            ]
+        },
+        'wedding': {
+            'Female': [
+                {'name': 'Saree', 'description': 'Traditional wedding attire', 'shop_link': 'https://www.google.com/search?tbm=shop&q=saree+women'},
+                {'name': 'Lehenga', 'description': 'Festive and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=lehenga+women'},
+                {'name': 'Jewelry Set', 'description': 'Perfect for weddings', 'shop_link': 'https://www.google.com/search?tbm=shop&q=wedding+jewelry+women'},
+                {'name': 'Anarkali Dress', 'description': 'Beautiful for ceremonies', 'shop_link': 'https://www.google.com/search?tbm=shop&q=anarkali+women'},
+                {'name': 'Dupatta', 'description': 'Traditional accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=dupatta+women'}
+            ],
+            'Male': [
+                {'name': 'Kurta', 'description': 'Traditional wedding attire', 'shop_link': 'https://www.google.com/search?tbm=shop&q=kurta+men'},
+                {'name': 'Sherwani', 'description': 'Festive and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=sherwani+men'},
+                {'name': 'Wedding Watch', 'description': 'Perfect for weddings', 'shop_link': 'https://www.google.com/search?tbm=shop&q=wedding+watch+men'},
+                {'name': 'Jodhpuri Suit', 'description': 'Beautiful for ceremonies', 'shop_link': 'https://www.google.com/search?tbm=shop&q=jodhpuri+suit+men'},
+                {'name': 'Mojari Shoes', 'description': 'Traditional accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=mojari+men'}
+            ]
+        },
+        'party': {
+            'Female': [
+                {'name': 'Party Dress', 'description': 'Stylish for parties', 'shop_link': 'https://www.google.com/search?tbm=shop&q=party+dress+women'},
+                {'name': 'Jumpsuit', 'description': 'Trendy and comfortable', 'shop_link': 'https://www.google.com/search?tbm=shop&q=jumpsuit+women'},
+                {'name': 'Heels', 'description': 'Perfect for dancing', 'shop_link': 'https://www.google.com/search?tbm=shop&q=heels+women'},
+                {'name': 'Clutch Bag', 'description': 'Party essential', 'shop_link': 'https://www.google.com/search?tbm=shop&q=clutch+bag+women'},
+                {'name': 'Statement Earrings', 'description': 'Bold accessories', 'shop_link': 'https://www.google.com/search?tbm=shop&q=statement+earrings+women'}
+            ],
+            'Male': [
+                {'name': 'Party Shirt', 'description': 'Stylish for parties', 'shop_link': 'https://www.google.com/search?tbm=shop&q=party+shirt+men'},
+                {'name': 'Casual Blazer', 'description': 'Trendy and comfortable', 'shop_link': 'https://www.google.com/search?tbm=shop&q=casual+blazer+men'},
+                {'name': 'Loafers', 'description': 'Perfect for dancing', 'shop_link': 'https://www.google.com/search?tbm=shop&q=loafers+men'},
+                {'name': 'Wrist Watch', 'description': 'Party essential', 'shop_link': 'https://www.google.com/search?tbm=shop&q=wrist+watch+men'},
+                {'name': 'Pocket Square', 'description': 'Bold accessories', 'shop_link': 'https://www.google.com/search?tbm=shop&q=pocket+square+men'}
+            ]
+        },
+        'office': {
+            'Female': [
+                {'name': 'Office Shirt', 'description': 'Professional office wear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+shirt+women'},
+                {'name': 'Formal Trousers', 'description': 'Smart and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=formal+trousers+women'},
+                {'name': 'Blazer', 'description': 'Professional look', 'shop_link': 'https://www.google.com/search?tbm=shop&q=blazer+women'},
+                {'name': 'Office Dress', 'description': 'Classic office attire', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+dress+women'},
+                {'name': 'Minimal Jewelry', 'description': 'Subtle accessories', 'shop_link': 'https://www.google.com/search?tbm=shop&q=minimal+jewelry+women'}
+            ],
+            'Male': [
+                {'name': 'Office Shirt', 'description': 'Professional office wear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+shirt+men'},
+                {'name': 'Formal Trousers', 'description': 'Smart and elegant', 'shop_link': 'https://www.google.com/search?tbm=shop&q=formal+trousers+men'},
+                {'name': 'Blazer', 'description': 'Professional look', 'shop_link': 'https://www.google.com/search?tbm=shop&q=blazer+men'},
+                {'name': 'Office Shoes', 'description': 'Classic office footwear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=office+shoes+men'},
+                {'name': 'Tie', 'description': 'Professional accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=tie+men'}
+            ]
+        },
+        'casual': {
+            'Female': [
+                {'name': 'Casual Top', 'description': 'Relaxed and comfy', 'shop_link': 'https://www.google.com/search?tbm=shop&q=casual+top+women'},
+                {'name': 'Jeans', 'description': 'Everyday wear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=jeans+women'},
+                {'name': 'Sneakers', 'description': 'Perfect for casual outings', 'shop_link': 'https://www.google.com/search?tbm=shop&q=sneakers+women'},
+                {'name': 'T-shirt', 'description': 'Simple and stylish', 'shop_link': 'https://www.google.com/search?tbm=shop&q=tshirt+women'},
+                {'name': 'Backpack', 'description': 'Casual accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=backpack+women'}
+            ],
+            'Male': [
+                {'name': 'Casual Shirt', 'description': 'Relaxed and comfy', 'shop_link': 'https://www.google.com/search?tbm=shop&q=casual+shirt+men'},
+                {'name': 'Jeans', 'description': 'Everyday wear', 'shop_link': 'https://www.google.com/search?tbm=shop&q=jeans+men'},
+                {'name': 'Sneakers', 'description': 'Perfect for casual outings', 'shop_link': 'https://www.google.com/search?tbm=shop&q=sneakers+men'},
+                {'name': 'T-shirt', 'description': 'Simple and stylish', 'shop_link': 'https://www.google.com/search?tbm=shop&q=tshirt+men'},
+                {'name': 'Backpack', 'description': 'Casual accessory', 'shop_link': 'https://www.google.com/search?tbm=shop&q=backpack+men'}
+            ]
+        }
+    }
+    if occasion:
+        occ_key = occasion.lower()
+        gender_key = gender if gender in ['Female', 'Male'] else 'Female'
+        if occ_key in occasion_products and gender_key in occasion_products[occ_key]:
+            print(f"✅ Using strict occasion-based products for {occ_key} and {gender_key}")
+            return occasion_products[occ_key][gender_key]
     
     # Product database with recommendations for different skin tones
     products_db = {
@@ -262,6 +352,21 @@ def generate_product_recommendations(skin_tone, gender):
     
     products = products_db[skin_tone_key][gender_key][:5]  # Return top 5 products
     
+    # Filter or adjust by occasion
+    if occasion:
+        occasion = occasion.lower()
+        occasion_keywords = {
+            'interview': ['shirt', 'blazer', 'formal', 'office', 'dress pants'],
+            'wedding': ['saree', 'dress', 'kurta', 'jewelry', 'statement', 'luxurious'],
+            'party': ['jumpsuit', 'top', 'party', 'vibrant', 'bright', 'loafers'],
+            'office': ['blazer', 'shirt', 'office', 'chinos', 'formal', 'watch'],
+            'casual': ['t-shirt', 'jeans', 'casual', 'boots', 'chinos', 'kurta']
+        }
+        keywords = occasion_keywords.get(occasion, [])
+        filtered = [p for p in products if any(k in p['name'].lower() or k in p['description'].lower() for k in keywords)]
+        if filtered:
+            products = filtered[:5]
+    
     print(f"✅ Generated {len(products)} product recommendations")
     return products
 
@@ -282,9 +387,11 @@ def analyze():
         
         file = request.files['file']
         gender = request.form.get('gender', 'Female')
+        occasion = request.form.get('occasion', None)
         
         print(f"📸 File received: {file.filename}")
         print(f"👥 Gender: {gender}")
+        print(f"🎉 Occasion: {occasion}")
         
         if file.filename == '':
             print("❌ File has empty filename")
@@ -330,7 +437,8 @@ def analyze():
             print("🛍️ Generating product recommendations...")
             products = generate_product_recommendations(
                 analysis_result['skin_tone'],
-                gender
+                gender,
+                occasion
             )
             
             r, g, b = analysis_result['average_color']
@@ -341,6 +449,7 @@ def analyze():
                 'face_shape': analysis_result.get('face_shape', 'Oval'),
                 'average_color': f'rgb({r},{g},{b})',
                 'gender': gender,
+                'occasion': occasion,
                 'recommendations': recommendations,
                 'products': products
             })

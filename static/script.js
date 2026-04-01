@@ -245,7 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const gender = document.getElementById('gender').value;
+    const gender = document.getElementById('gender').value;
+    const occasion = document.getElementById('occasion').value;
         
         let fileToAnalyze = null;
         let previewSource = null;
@@ -289,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         formData.append('gender', gender);
+    formData.append('occasion', occasion);
 
         try {
             const response = await fetch('/api/analyze', {

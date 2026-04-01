@@ -9,7 +9,8 @@ load_dotenv()
 class GroqService:
     def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY")
-        print(f"🔧 GroqService initialized. API Key available: {bool(self.api_key)}")
+        masked_key = self.api_key[:6] + "..." + self.api_key[-4:] if self.api_key else None
+        print(f"🔧 GroqService initialized. API Key loaded: {masked_key}")
         if not self.api_key:
             print("  ⚠️  Warning: No API key found in environment")
             self.client = None

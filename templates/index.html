@@ -158,6 +158,17 @@
                                         <option value="Non-Binary">Non-Binary</option>
                                     </select>
                                 </div>
+                                <!-- Occasion Selection -->
+                                <div class="mb-3">
+                                    <label for="occasion" class="form-label">Select Occasion</label>
+                                    <select class="form-select" id="occasion">
+                                        <option value="Interview">Interview</option>
+                                        <option value="Wedding">Wedding</option>
+                                        <option value="Party">Party</option>
+                                        <option value="Office">Office Wear</option>
+                                        <option value="Casual">Casual</option>
+                                    </select>
+                                </div>
 
                                 <!-- Upload Mode -->
                                 <div id="uploadMode">
@@ -442,8 +453,7 @@
 
                 <!-- Assistant Floating Button & Modal -->
                 <button id="assistantBtn" class="btn assistant-btn" aria-label="Open StyleAI Assistant">
-                    <!-- Use an inline image showing a woman doing namaste; external Unsplash image used for demo -->
-                      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80&auto=format&fit=crop&crop=entropy" alt="Boat on water" class="assistant-avatar">
+                    <span class="assistant-namaste" style="font-size:2.2rem;line-height:1;">🙏</span>
                 </button>
 
                 <div class="modal fade" id="assistantModal" tabindex="-1" aria-labelledby="assistantModalLabel" aria-hidden="true">
