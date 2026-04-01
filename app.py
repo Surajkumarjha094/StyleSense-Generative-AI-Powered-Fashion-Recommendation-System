@@ -503,5 +503,7 @@ if __name__ == '__main__':
     print("🚀 Starting StyleAI Flask Server...")
     print(f"🔑 API Key configured: {bool(os.getenv('GROQ_API_KEY'))}")
     port = int(os.getenv('PORT', '5000'))
-    print(f"➡️ Listening on 127.0.0.1:{port}")
-    app.run(debug=True, host='127.0.0.1', port=port)
+    host = os.getenv('HOST', '0.0.0.0')
+    debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+    print(f"➡️ Listening on {host}:{port}")
+    app.run(debug=debug_mode, host=host, port=port)

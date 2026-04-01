@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+npm-debug.log
+.DS_Store
+*.pyc
+__pycache__
+venv
+.env
+.env.local
+uploads/*
