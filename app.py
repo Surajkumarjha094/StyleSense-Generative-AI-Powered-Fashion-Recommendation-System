@@ -6,23 +6,37 @@ import os
 from dotenv import load_dotenv
 import uuid
 import traceback
+import tempfile
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Create uploads folder if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Use temp directory for uploads on Vercel
+if os.getenv('VERCEL'):
+    app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
+else:
+    app.config['UPLOAD_FOLDER'] = 'uploads'
+
+# Create uploads folder if it doesn't exist (only for local)
+if app.config['UPLOAD_FOLDER'] == 'uploads':
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    except Exception as e:
+        print(f"⚠️ Warning: Could not create uploads folder: {e}")
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-groq_service = GroqService()
+try:
+    groq_service = GroqService()
+except Exception as e:
+    print(f"⚠️ Warning: Could not initialize Groq service: {e}")
+    groq_service = None
 
 def generate_product_recommendations(skin_tone, gender, occasion=None):
     """Generate personalized product recommendations based on skin tone, gender, and occasion"""

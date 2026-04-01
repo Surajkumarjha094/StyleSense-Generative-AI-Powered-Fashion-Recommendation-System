@@ -3,25 +3,21 @@
   "builds": [
     {
       "src": "wsgi.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "static/(.*)",
-      "use": "@vercel/static"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "runtime": "python3.11"
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "wsgi.py"
     }
   ],
   "env": {
-    "FLASK_DEBUG": "False",
-    "HOST": "0.0.0.0"
+    "FLASK_ENV": "production",
+    "PYTHONDONTWRITEBYTECODE": "1"
   }
 }
