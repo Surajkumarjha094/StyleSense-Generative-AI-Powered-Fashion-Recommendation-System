@@ -11,4 +11,4 @@ load_dotenv()
 from app import app
 
 # Export app for Vercel
-export = app
+app = app
