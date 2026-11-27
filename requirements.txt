@@ -1,7 +1,8 @@
+
 flask
 groq
-opencv-python-headless
-numpy
+opencv-python-headless==4.11.0.86
+numpy==1.26.4
 Pillow
 python-dotenv
 werkzeug
